@@ -12,11 +12,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   // Lista con las tres pantallas por las que vamos a navegar
-  final List<Widget> _screens = [
-    SplashScreen(),
-    SecondScreen(),
-    ThirdScreen(),
-  ];
+  final List<Widget> _screens = [SplashScreen(), SecondScreen(), ThirdScreen()];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -27,19 +23,11 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _screens.elementAt(_selectedIndex),
-      ),
+      body: Center(child: _screens.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Buscar',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Notificaciones',
