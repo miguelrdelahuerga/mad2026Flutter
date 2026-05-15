@@ -1,4 +1,4 @@
-<img width="449" height="963" alt="image" src="https://github.com/user-attachments/assets/ad8cfc26-0158-490a-9da1-405dc688c6b0" />## Proyecto Base MAD 2026 - Flutter
+## Proyecto Base MAD 2026 - Flutter
 
 ## Workspace
 
