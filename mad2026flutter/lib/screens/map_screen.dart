@@ -32,16 +32,12 @@ class MapScreenState extends State<MapScreen> {
       List<Marker> loadedMarkers = dbMarkers.map((record) {
         return Marker(
           point: LatLng(
-              double.parse(record['latitude'].toString()),
-              double.parse(record['longitude'].toString())
+            double.parse(record['latitude'].toString()),
+            double.parse(record['longitude'].toString()),
           ),
           width: 80,
           height: 80,
-          child: const Icon(
-            Icons.location_pin,
-            size: 40,
-            color: Colors.red,
-          ),
+          child: const Icon(Icons.location_pin, size: 40, color: Colors.red),
         );
       }).toList();
 
@@ -55,14 +51,16 @@ class MapScreenState extends State<MapScreen> {
         markers = [
           Marker(
             point: LatLng(40.389235, -3.627749),
-            width: 80, height: 80,
+            width: 80,
+            height: 80,
             child: const Icon(Icons.location_pin, size: 40, color: Colors.blue),
           ),
           Marker(
             point: LatLng(40.416775, -3.703790),
-            width: 80, height: 80,
+            width: 80,
+            height: 80,
             child: const Icon(Icons.location_pin, size: 40, color: Colors.blue),
-          )
+          ),
         ];
       });
     }
@@ -74,13 +72,17 @@ class MapScreenState extends State<MapScreen> {
       appBar: AppBar(title: const Text('Map & Routes')),
       body: FlutterMap(
         options: MapOptions(
-          initialCenter: const LatLng(40.389235, -3.627749), // Centrado en la UPM
+          initialCenter: const LatLng(
+            40.389235,
+            -3.627749,
+          ), // Centrado en la UPM
           initialZoom: 12.0,
         ),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.app',
+            userAgentPackageName:
+                'miguel.rdelahuerga@alumnos.upm.es', // Reemplaza por tu correo real de la UPM
           ),
           // Capa de la ruta estática
           PolylineLayer(
