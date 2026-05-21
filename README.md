@@ -17,9 +17,10 @@ El objetivo en esta fase ha sido asentar una base limpia y escalable utilizando 
 
 
 <div align="center">
-  <img width="449" height="963" alt="image" src="https://github.com/user-attachments/assets/ae6ab739-14e1-4484-96e3-f04c3b2b56c3" />
-  <img width="452" height="951" alt="image" src="https://github.com/user-attachments/assets/02141a95-1f2c-4fbd-8bde-fb4a862793ca" />
-  <img width="454" height="958" alt="image" src="https://github.com/user-attachments/assets/8afe0cef-fc65-4a45-86ae-153b26f32910" />
+  <img width="449" height="954" alt="image" src="https://github.com/user-attachments/assets/7e193ddd-2eac-4827-b751-673f6d8b7d51" />
+  <img width="453" height="959" alt="image" src="https://github.com/user-attachments/assets/b0e5c337-a70b-4285-92e2-e6f1011f63ff" />
+  <img width="443" height="969" alt="image" src="https://github.com/user-attachments/assets/0e057e5b-9ca1-41cf-affd-27fc62eade0f" />
+  <img width="447" height="951" alt="image" src="https://github.com/user-attachments/assets/246b50f0-4088-4105-91ad-88f0d84e3fde" />
 
 
 
