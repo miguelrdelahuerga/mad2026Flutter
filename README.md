@@ -17,9 +17,10 @@ El objetivo en esta fase ha sido asentar una base limpia y escalable utilizando 
 
 
 <div align="center">
-  <img width="449" height="963" alt="image" src="https://github.com/user-attachments/assets/ae6ab739-14e1-4484-96e3-f04c3b2b56c3" />
-  <img width="452" height="951" alt="image" src="https://github.com/user-attachments/assets/02141a95-1f2c-4fbd-8bde-fb4a862793ca" />
-  <img width="454" height="958" alt="image" src="https://github.com/user-attachments/assets/8afe0cef-fc65-4a45-86ae-153b26f32910" />
+  <img width="449" height="954" alt="image" src="https://github.com/user-attachments/assets/7e193ddd-2eac-4827-b751-673f6d8b7d51" />
+  <img width="453" height="959" alt="image" src="https://github.com/user-attachments/assets/b0e5c337-a70b-4285-92e2-e6f1011f63ff" />
+  <img width="443" height="969" alt="image" src="https://github.com/user-attachments/assets/0e057e5b-9ca1-41cf-affd-27fc62eade0f" />
+  <img width="447" height="951" alt="image" src="https://github.com/user-attachments/assets/246b50f0-4088-4105-91ad-88f0d84e3fde" />
 
 
 
@@ -32,24 +33,30 @@ El objetivo en esta fase ha sido asentar una base limpia y escalable utilizando 
 ## Features
 
 Lista de características funcionales de la aplicación en su estado actual:
-* **Navegación intuitiva:** Transición entre diferentes apartados de la aplicación.
-* **Manejo de estado visual:** La aplicación recuerda en qué pestaña se encuentra el usuario y la resalta visualmente.
-* Logging
-* Widgets lifecycle examples
-* Persistence
-* GPS coordinates
-* ListView
+* **Autenticación segura en la nube:** Pantalla de Login integrada con Firebase Authentication que restringe el acceso a la aplicación únicamente a usuarios registrados.
+* **Navegación e integridad de estado:** Menú inferior dinámico que utiliza `IndexedStack` para garantizar que el estado de los componentes (como el interruptor de activación del GPS) no se reinicie al alternar entre pestañas.
+* **Persistencia Relacional Local (SQLite):** Almacenamiento estructurado en base de datos local para la gestión de coordenadas, permitiendo visualizar los registros en una lista con soporte completo para operaciones CRUD (añadir, editar y borrar datos en tiempo real).
+* **Mapas interactivos y trazado de rutas:** Integración con OpenStreetMap que renderiza marcadores dinámicos leyendo las coordenadas guardadas en SQLite y dibuja líneas de ruta estáticas (`Polyline`) sobre el mapa.
+* **Flujo de cierre de sesión controlado:** Botón de Logout respaldado por un cuadro de diálogo emergente de confirmación (`AlertDialog`) para invalidar de forma segura el token de sesión.
+* **Logs y ciclo de vida:** Trazabilidad en la consola de depuración de los cambios de estado y eventos del ciclo de vida de los widgets.
 
 Lista de características técnicas de la aplicación:
-* **Desarrollo Multiplataforma:** Implementado en Flutter y Dart.
-* **Menú:** Utilización del widget `BottomNavigationBar` para la navegación principal.
-* **Modularidad:** Separación de la interfaz en múltiples archivos (arquitectura de vistas en la carpeta `screens`) para mantener un código limpio.
-* **Gestión de Estado:** Uso de `StatefulWidget` en la vista principal para controlar el índice de la pantalla seleccionada de forma dinámica.
+* **Desarrollo Multiplataforma:** Proyecto desarrollado íntegramente con el SDK de Flutter y el lenguaje Dart.
+* **Modularidad y Arquitectura Clean:** Separación estricta de responsabilidades dividida en capas de interfaz (vistas independientes dentro de la carpeta `screens`), lógica de control de acceso (`app.dart`) y persistencia de datos relacionales (`DatabaseHelper`).
+* **Gestión de Estado Reactiva:** Uso de `StatefulWidget` para el control de flujos locales, combinado con `StreamBuilder` para escuchar en tiempo real los cambios del estado de autenticación globales de Firebase.
+* **Integración de Servicios Externos:** Conexión nativa con Google Cloud mediante Firebase Core y Firebase Auth a través de la compilación automatizada de `firebase_options.dart`.
+* **Ecosistema de Dependencias:** Incorporación de los paquetes `flutter_map` y `latlong2` para la gestión geoespacial, junto con `sqflite` para el motor de base de datos local.
 
 ## How to Use
 
-Al iniciar la aplicación, el usuario es dirigido directamente a la pantalla principal de la app ("Inicio"). Para acceder a todas las secciones, el usuario debe utilizar el menú de navegación situado en la parte inferior de la pantalla. Al tocar cualquiera de los tres iconos (Inicio, Buscar, Notificaciones), la vista central se actualizará instantáneamente para mostrar el contenido correspondiente a esa pestaña.  En la página principal tenemos un boton en la parte superior de SETTINGS, el cual nos dice nuestras credenciales almacenadas si ya las hemos introducido.  Tenemos un boton para activar nuestra ubicación y que le permita a la aplicación almacenarla y mostrarnosla en la pantalla de búsqueda.  En la pantalla notificaciones tneemos varios botones que nos muestran a modo ejemplo como sería un alerdialog, un snackbar, etc.
+Al iniciar la aplicación, el flujo de seguridad intercepta la ruta inicial y dirige al usuario directamente a la pantalla de **Firebase Login**. Para acceder a los módulos de la aplicación, el usuario debe autenticarse introduciendo un correo electrónico y una contraseña válidos previamente registrados en la consola del proyecto. Una vez validado correctamente por los servidores de Firebase, el sistema redirige de forma automática al entorno principal.
 
+Dentro de la aplicación, el usuario interactúa a través del menú de navegación inferior (`BottomNavigationBar`) para alternar entre los siguientes módulos:
+1. **Inicio / Sensorización:** Contiene los interruptores de control para simular o capturar la ubicación. Gracias al almacenamiento de estado en la UI, las selecciones permanecen inalteradas independientemente de la navegación.
+2. **Persistencia (SQLite):** Lista interactiva que se comunica directamente con la base de datos relacional del dispositivo. Permite registrar nuevos puntos, actualizar coordenadas existentes o eliminarlas permanentemente del almacenamiento.
+3. **Mapas y Rutas:** Carga un mapa interactivo de OpenStreetMap centrado en Madrid (zona del Campus Sur de la UPM). Este componente mapea dinámicamente cada coordenada de SQLite en un marcador visual y superpone una línea de ruta azul que une diferentes puntos geográficos clave del recorrido.
+
+Para terminar la sesión, el usuario puede acceder a la sección de **Settings** en la esquina superior. Al pulsar el botón de **Logout**, la aplicación despliega un cuadro de diálogo flotante ("Confirm Logout") solicitando confirmación. Al aceptar, Firebase destruye la sesión del dispositivo y el entorno expulsa inmediatamente al usuario de vuelta a la pantalla de Login, bloqueando de nuevo el acceso.
 ## Participants
 
 Lista de desarrolladores de MAD:
