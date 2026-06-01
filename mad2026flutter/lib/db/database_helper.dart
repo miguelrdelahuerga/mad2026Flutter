@@ -17,7 +17,7 @@ class DatabaseHelper {
   initDB() async {
     final path = await getDatabasesPath();
     return await openDatabase(
-      join(path, 'coordinate_database.db'),
+      join(path, 'osasis_database.db'),
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE coordinates(
@@ -25,6 +25,8 @@ class DatabaseHelper {
             timestamp TEXT,
             latitude REAL,
             longitude REAL
+            type TEXT,
+            is_operational INTEGER
           )
         ''');
       },
@@ -33,12 +35,14 @@ class DatabaseHelper {
   }
 
   // INSERTAR
-  Future<void> insertCoordinate(Position position) async {
+  Future<void> insertCoordinate(Position position, {String type = 'water', int isOperational = 1}) async {
     final db = await database;
     await db.insert('coordinates', {
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
       'latitude': position.latitude,
-      'longitude': position.longitude
+      'longitude': position.longitude,
+      'type': type,
+      'is_operational': isOperational
     });
   }
 
@@ -55,11 +59,17 @@ class DatabaseHelper {
   }
 
   // ACTUALIZAR
-  Future<void> updateCoordinate(String timestamp, String newLat, String newLong) async {
+  // ACTUALIZAR (Añadimos el tipo y el estado operativo)
+  Future<void> updateCoordinate(String timestamp, String newLat, String newLong, String newType, int isOperational) async {
     final db = await database;
     await db.update(
       'coordinates',
-      {'latitude': newLat, 'longitude': newLong},
+      {
+        'latitude': newLat,
+        'longitude': newLong,
+        'type': newType,
+        'is_operational': isOperational
+      },
       where: 'timestamp = ?',
       whereArgs: [timestamp],
     );
