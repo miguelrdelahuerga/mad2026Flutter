@@ -12,12 +12,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    SplashScreen(),
-    SecondScreen(),
-    ThirdScreen(),
-    MapScreen(),
-  ];
+  // Esta "llave" nos permite controlar el mapa desde cualquier parte
+  final GlobalKey<MapScreenState> mapKey = GlobalKey<MapScreenState>();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -25,8 +21,27 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  // Función mágica que salta al mapa y lo centra en la coordenada elegida
+  void _jumpToMap(double lat, double lon) {
+    setState(() {
+      _selectedIndex = 3; // Cambia la pestaña inferior al Mapa
+    });
+    // Le damos unos milisegundos para que el mapa se renderice y luego movemos la cámara
+    Future.delayed(const Duration(milliseconds: 300), () {
+      mapKey.currentState?.moveToLocation(lat, lon);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Definimos las pantallas pasándole al Radar la función de saltar y al Mapa la llave
+    final List<Widget> _screens = [
+      SplashScreen(),
+      SecondScreen(onJumpToMap: _jumpToMap), // Pasamos la función al radar
+      ThirdScreen(),
+      MapScreen(key: mapKey), // Enganchamos la llave al mapa
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
@@ -43,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed, // Asegura que los colores se vean bien con 4 items
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

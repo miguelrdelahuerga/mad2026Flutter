@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart'; // Importante para ubicar al arrancar
 import '../db/database_helper.dart';
 
 class MapScreen extends StatefulWidget {
+  // Recibe la Key que le manda el MainScreen
+  const MapScreen({Key? key}) : super(key: key);
+
   @override
   MapScreenState createState() => MapScreenState();
 }
@@ -11,18 +15,37 @@ class MapScreen extends StatefulWidget {
 class MapScreenState extends State<MapScreen> {
   List<Marker> markers = [];
 
-  // La "Ruta Fresca" estática
-  final List<LatLng> staticRoute = [
-    const LatLng(40.389235, -3.627749), // UPM Campus Sur
-    const LatLng(40.395000, -3.640000), // Parque cercano
-    const LatLng(40.400000, -3.650000), // Zona de sombras
-    const LatLng(40.416775, -3.703790), // Centro Madrid (Refugio)
-  ];
+  // Controlador para poder mover la cámara desde el código
+  final MapController mapController = MapController();
 
   @override
   void initState() {
     super.initState();
     _loadMarkers();
+    _centerOnUserLocation(); // Centra el mapa al iniciarlo
+  }
+
+  // --- FUNCIÓN ESTRELLA: Mueve la cámara desde el Radar ---
+  void moveToLocation(double lat, double lon) {
+    mapController.move(LatLng(lat, lon), 17.0); // 17.0 es el zoom (muy de cerca)
+  }
+
+  // Intenta leer el GPS y centra el mapa ahí
+  Future<void> _centerOnUserLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      // Movemos la cámara a donde está el usuario
+      moveToLocation(position.latitude, position.longitude);
+    } catch (e) {
+      print("No se pudo obtener la ubicación para centrar el mapa.");
+    }
   }
 
   Future<void> _loadMarkers() async {
@@ -33,7 +56,6 @@ class MapScreenState extends State<MapScreen> {
         String type = record['type'] ?? 'water';
         int isOp = record['is_operational'] ?? 1;
 
-        // Selección dinámica de Icono y Color
         IconData iconData = Icons.water_drop;
         Color iconColor = Colors.blue;
 
@@ -45,57 +67,46 @@ class MapScreenState extends State<MapScreen> {
           iconColor = Colors.lightBlue;
         }
 
-        // Si está averiado/cerrado, se pone rojo
-        if (isOp == 0) {
-          iconColor = Colors.red.withOpacity(0.6);
-        }
+        if (isOp == 0) iconColor = Colors.red.withOpacity(0.6);
 
         return Marker(
           point: LatLng(
             double.parse(record['latitude'].toString()),
             double.parse(record['longitude'].toString()),
           ),
-          width: 80,
-          height: 80,
+          width: 80, height: 80,
           child: Icon(iconData, size: 40, color: iconColor),
         );
       }).toList();
 
-      setState(() {
-        markers = loadedMarkers;
-      });
+      setState(() { markers = loadedMarkers; });
     } catch (e) {
-      // Marcadores simulados para Google Chrome con la nueva lógica
-      print("Cargando oasis simulados para Chrome Web");
-      setState(() {
-        markers = [
-          Marker(
-            point: const LatLng(40.389235, -3.627749), // Fuente operativa
-            width: 80, height: 80,
-            child: const Icon(Icons.water_drop, size: 40, color: Colors.blue),
-          ),
-          Marker(
-            point: const LatLng(40.395000, -3.640000), // Zona de sombra
-            width: 80, height: 80,
-            child: const Icon(Icons.park, size: 40, color: Colors.green),
-          ),
-          Marker(
-            point: const LatLng(40.400000, -3.650000), // Fuente ROTA
-            width: 80, height: 80,
-            child: Icon(Icons.water_drop, size: 40, color: Colors.red.withOpacity(0.6)),
-          ),
-        ];
-      });
+      print("Error cargando BBDD en el mapa.");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mapa de Oasis')),
+      appBar: AppBar(
+        title: const Text('Mapa de Oasis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.my_location),
+            tooltip: 'Centrar en mi ubicación',
+            onPressed: _centerOnUserLocation, // Botón manual por si nos perdemos por el mapa
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Recargar marcadores',
+            onPressed: _loadMarkers,
+          )
+        ],
+      ),
       body: FlutterMap(
-        options: MapOptions(
-          initialCenter: const LatLng(40.389235, -3.627749), // Centrado en la UPM
+        mapController: mapController, // Vinculamos el controlador
+        options: const MapOptions(
+          initialCenter: LatLng(40.389235, -3.627749), // Centro por defecto (UPM)
           initialZoom: 13.0,
         ),
         children: [
@@ -103,17 +114,7 @@ class MapScreenState extends State<MapScreen> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'miguel.rdelahuerga@alumnos.upm.es',
           ),
-          // Capa de la Ruta Fresca
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: staticRoute,
-                strokeWidth: 5.0,
-                color: Colors.lightBlueAccent.withOpacity(0.7),
-              ),
-            ],
-          ),
-          // Capa de los Oasis
+          // ¡Adiós a la PolylineLayer de la ruta estática!
           MarkerLayer(markers: markers),
         ],
       ),
