@@ -45,7 +45,16 @@ class DatabaseHelper {
       'is_operational': isOperational
     });
   }
-
+  Future<void> insertManualCoordinate(double lat, double lon, {String type = 'water', int isOperational = 1}) async {
+    final db = await database;
+    await db.insert('coordinates', {
+      'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+      'latitude': lat,
+      'longitude': lon,
+      'type': type,
+      'is_operational': isOperational
+    });
+  }
   // LEER
   Future<List<Map<String, dynamic>>> getCoordinates() async {
     final db = await database;

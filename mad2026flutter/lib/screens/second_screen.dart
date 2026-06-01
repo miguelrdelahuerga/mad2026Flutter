@@ -34,6 +34,7 @@ class _SecondScreenState extends State<SecondScreen> {
     }
   }
 
+  // Ahora este método lo podemos llamar con el botón de refrescar
   void _loadDbCoordinatesAndUpdate() async {
     try {
       List<Map<String, dynamic>> dbCoords = await DatabaseHelper.instance.getCoordinates();
@@ -42,15 +43,97 @@ class _SecondScreenState extends State<SecondScreen> {
           c['timestamp'].toString(),
           c['latitude'].toString(),
           c['longitude'].toString(),
-          (c['type'] ?? 'water').toString(), // Nuevo campo Tipo
-          (c['is_operational'] ?? 1).toString() // Nuevo campo Operativo
+          (c['type'] ?? 'water').toString(),
+          (c['is_operational'] ?? 1).toString()
         ]).toList();
       });
     } catch (e) {
-      print("SQFLite no soportado en Web (Chrome). Usando persistencia CSV.");
+      print("Error cargando BBDD: $e");
     }
   }
 
+  // --- DIÁLOGO PARA AÑADIR MANUALMENTE ---
+  void _showAddManualDialog() {
+    TextEditingController latController = TextEditingController();
+    TextEditingController longController = TextEditingController();
+    String selectedType = 'water';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (context, setStateSB) {
+              return AlertDialog(
+                title: const Text("Añadir Oasis Manual"),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const Text("Introduce las coordenadas exactas:", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: latController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                        decoration: const InputDecoration(labelText: "Latitud (Ej: 40.416)", border: OutlineInputBorder()),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: longController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                        decoration: const InputDecoration(labelText: "Longitud (Ej: -3.703)", border: OutlineInputBorder()),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: selectedType,
+                        decoration: const InputDecoration(labelText: 'Tipo de Oasis'),
+                        items: const [
+                          DropdownMenuItem(value: 'water', child: Text('Fuente de agua')),
+                          DropdownMenuItem(value: 'shade', child: Text('Zona de sombra')),
+                          DropdownMenuItem(value: 'indoor', child: Text('Refugio (Interior)')),
+                        ],
+                        onChanged: (val) {
+                          setStateSB(() { selectedType = val!; });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("Cancelar"),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  ElevatedButton(
+                    child: const Text("Guardar Oasis"),
+                    onPressed: () async {
+                      // Validamos que hayan metido números de verdad
+                      double? lat = double.tryParse(latController.text);
+                      double? lon = double.tryParse(longController.text);
+
+                      if (lat != null && lon != null) {
+                        await DatabaseHelper.instance.insertManualCoordinate(lat, lon, type: selectedType);
+                        Navigator.of(context).pop();
+                        _loadDbCoordinatesAndUpdate(); // Recarga la lista instantáneamente
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('¡Oasis añadido con éxito!'), backgroundColor: Colors.green),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Por favor, usa formatos numéricos válidos.'), backgroundColor: Colors.red),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            }
+        );
+      },
+    );
+  }
+
+  // --- DIÁLOGOS DE BORRAR Y ACTUALIZAR (SIN CAMBIOS) ---
   void _showDeleteDialog(String timestamp) {
     showDialog(
       context: context,
@@ -59,10 +142,7 @@ class _SecondScreenState extends State<SecondScreen> {
           title: const Text("Eliminar Oasis"),
           content: const Text("¿Quieres borrar este punto del mapa?"),
           actions: <Widget>[
-            TextButton(
-              child: const Text("Cancelar"),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
+            TextButton(child: const Text("Cancelar"), onPressed: () => Navigator.of(context).pop()),
             TextButton(
               child: const Text("Borrar", style: TextStyle(color: Colors.red)),
               onPressed: () async {
@@ -80,15 +160,12 @@ class _SecondScreenState extends State<SecondScreen> {
   void _showUpdateDialog(String timestamp, String currentLat, String currentLong, String currentType, String currentOp) {
     TextEditingController latController = TextEditingController(text: currentLat);
     TextEditingController longController = TextEditingController(text: currentLong);
-
-    // Variables locales para el diálogo
     String selectedType = currentType;
     bool isOperational = currentOp == '1';
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // StatefulBuilder nos permite actualizar el Switch dentro del AlertDialog
         return StatefulBuilder(
             builder: (context, setStateSB) {
               return AlertDialog(
@@ -97,14 +174,8 @@ class _SecondScreenState extends State<SecondScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      TextField(
-                        controller: latController,
-                        decoration: const InputDecoration(labelText: "Latitud"),
-                      ),
-                      TextField(
-                        controller: longController,
-                        decoration: const InputDecoration(labelText: "Longitud"),
-                      ),
+                      TextField(controller: latController, decoration: const InputDecoration(labelText: "Latitud")),
+                      TextField(controller: longController, decoration: const InputDecoration(labelText: "Longitud")),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         value: selectedType,
@@ -114,36 +185,24 @@ class _SecondScreenState extends State<SecondScreen> {
                           DropdownMenuItem(value: 'shade', child: Text('Zona de sombra')),
                           DropdownMenuItem(value: 'indoor', child: Text('Refugio (Interior)')),
                         ],
-                        onChanged: (val) {
-                          setStateSB(() { selectedType = val!; });
-                        },
+                        onChanged: (val) { setStateSB(() { selectedType = val!; }); },
                       ),
                       SwitchListTile(
                         title: const Text('¿Está operativo?'),
-                        subtitle: const Text('Desmárcalo si está seco/cerrado'),
                         value: isOperational,
                         activeColor: Colors.blue,
-                        onChanged: (val) {
-                          setStateSB(() { isOperational = val; });
-                        },
+                        onChanged: (val) { setStateSB(() { isOperational = val; }); },
                       )
                     ],
                   ),
                 ),
                 actions: <Widget>[
-                  TextButton(
-                    child: const Text("Cancelar"),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                  TextButton(child: const Text("Cancelar"), onPressed: () => Navigator.of(context).pop()),
                   TextButton(
                     child: const Text("Guardar"),
                     onPressed: () async {
                       await DatabaseHelper.instance.updateCoordinate(
-                          timestamp,
-                          latController.text,
-                          longController.text,
-                          selectedType,
-                          isOperational ? 1 : 0
+                          timestamp, latController.text, longController.text, selectedType, isOperational ? 1 : 0
                       );
                       Navigator.of(context).pop();
                       _loadDbCoordinatesAndUpdate();
@@ -157,7 +216,6 @@ class _SecondScreenState extends State<SecondScreen> {
     );
   }
 
-  // Traductor visual para los tipos
   String _translateType(String type) {
     if (type == 'water') return 'Fuente de Agua';
     if (type == 'shade') return 'Zona de Sombra';
@@ -170,8 +228,18 @@ class _SecondScreenState extends State<SecondScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Radar de Oasis'),
+        actions: [
+          // BOTÓN DE REFRESCO MANUAL PARA VER LOS DEL GPS
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Recargar lista',
+            onPressed: _loadDbCoordinatesAndUpdate,
+          )
+        ],
       ),
-      body: ListView.builder(
+      body: _dbCoordinates.isEmpty
+          ? const Center(child: Text("No hay oasis en el radar. \n¡Usa el GPS o añade uno manual!", textAlign: TextAlign.center))
+          : ListView.builder(
         itemCount: _coordinates.length + _dbCoordinates.length,
         itemBuilder: (context, index) {
           if (index < _coordinates.length) {
@@ -200,6 +268,13 @@ class _SecondScreenState extends State<SecondScreen> {
             );
           }
         },
+      ),
+      // BOTÓN FLOTANTE PARA AÑADIR A MANO
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAddManualDialog,
+        icon: const Icon(Icons.add_location_alt),
+        label: const Text('Añadir Oasis'),
+        backgroundColor: Colors.lightBlue,
       ),
     );
   }
