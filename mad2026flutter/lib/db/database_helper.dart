@@ -17,14 +17,14 @@ class DatabaseHelper {
   initDB() async {
     final path = await getDatabasesPath();
     return await openDatabase(
-      join(path, 'osasis_database.db'),
+      join(path, 'oasis_v3.db'),
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE coordinates(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             latitude REAL,
-            longitude REAL
+            longitude REAL,
             type TEXT,
             is_operational INTEGER
           )
