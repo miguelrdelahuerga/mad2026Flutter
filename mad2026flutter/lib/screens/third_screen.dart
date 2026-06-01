@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // Para decodificar el JSON
+import 'dart:convert';
+import 'package:geolocator/geolocator.dart'; // Importamos el GPS
 
 class ThirdScreen extends StatefulWidget {
   @override
@@ -10,14 +11,35 @@ class ThirdScreen extends StatefulWidget {
 class _ThirdScreenState extends State<ThirdScreen> {
   bool _isLoadingWeather = false;
 
-  // Llamada a la API pública de Open-Meteo
+  // Llamada a la API pública de Open-Meteo con GPS real
   Future<void> _fetchRealTimeWeather() async {
     setState(() { _isLoadingWeather = true; });
     try {
-      // Coordenadas de Madrid integradas en la petición
-      final response = await http.get(Uri.parse(
-          'https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current_weather=true'
-      ));
+      // 1. COMPROBAR PERMISOS Y OBTENER UBICACIÓN ACTUAL
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw Exception('El GPS está desactivado.');
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Permisos de ubicación denegados.');
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Permisos bloqueados en los ajustes del móvil.');
+      }
+
+      // Capturamos la posición real
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high
+      );
+
+      // 2. LLAMADA A LA API CON COORDENADAS DINÁMICAS
+      // Inyectamos las variables position.latitude y position.longitude en la URL
+      final String apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current_weather=true';
+
+      final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -26,9 +48,9 @@ class _ThirdScreenState extends State<ThirdScreen> {
         String mensaje;
         Color colorAlerta;
 
-        // Lógica dinámica según el calor real
+        // Lógica dinámica según el calor real en tu zona
         if (temp >= 35) {
-          mensaje = '⚠️ ALERTA ROJA: $tempºC en Madrid. ¡Peligro extremo!';
+          mensaje = '⚠️ ALERTA ROJA: $tempºC en tu ubicación. ¡Peligro extremo!';
           colorAlerta = Colors.red;
         } else if (temp >= 30) {
           mensaje = '🟠 ALERTA NARANJA: $tempºC. Busca un Oasis cercano.';
@@ -49,8 +71,9 @@ class _ThirdScreenState extends State<ThirdScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      // Mostramos el error si falla el GPS o internet
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al conectar con el servidor meteorológico.'), backgroundColor: Colors.grey),
+        SnackBar(content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'), backgroundColor: Colors.grey),
       );
     } finally {
       if (mounted) {
@@ -74,18 +97,18 @@ class _ThirdScreenState extends State<ThirdScreen> {
             const Icon(Icons.satellite_alt, size: 80, color: Colors.blueGrey),
             const SizedBox(height: 16),
             const Text(
-              'Radar Meteorológico',
+              'Radar Meteorológico Local', // Cambio de nombre para reflejar que es local
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
 
-            // BOTÓN DINÁMICO (API)
+            // BOTÓN DINÁMICO (API + GPS)
             ElevatedButton.icon(
               icon: _isLoadingWeather
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Icon(Icons.wb_sunny),
-              label: Text(_isLoadingWeather ? 'Conectando...' : 'Comprobar Estado Real (API)'),
+                  : const Icon(Icons.my_location), // Icono cambiado a la diana del GPS
+              label: Text(_isLoadingWeather ? 'Localizando y conectando...' : 'Comprobar Alerta en mi Zona'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
