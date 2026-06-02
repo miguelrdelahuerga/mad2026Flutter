@@ -17,10 +17,18 @@ El objetivo de este proyecto ha sido construir una arquitectura escalable e inte
 
 
 <div align="center">
-  <img width="449" height="954" alt="image" src="https://github.com/user-attachments/assets/7e193ddd-2eac-4827-b751-673f6d8b7d51" />
-  <img width="453" height="959" alt="image" src="https://github.com/user-attachments/assets/b0e5c337-a70b-4285-92e2-e6f1011f63ff" />
-  <img width="443" height="969" alt="image" src="https://github.com/user-attachments/assets/0e057e5b-9ca1-41cf-affd-27fc62eade0f" />
-  <img width="447" height="951" alt="image" src="https://github.com/user-attachments/assets/246b50f0-4088-4105-91ad-88f0d84e3fde" />
+  <img width="1080" height="2424" alt="Screenshot_1780422140" src="https://github.com/user-attachments/assets/7efb67c2-2e34-4292-aa8d-5dd6154878d2"/>
+  <img width="1080" height="2424" alt="Screenshot_1780422150" src="https://github.com/user-attachments/assets/0abd5e20-564a-4574-826f-bb54a7afea1e" />
+  <img width="1080" height="2424" alt="Screenshot_1780422144" src="https://github.com/user-attachments/assets/5377cfbf-3198-4203-b6c5-38e474a1bd74" />
+  <img width="1080" height="2424" alt="Screenshot_1780422155" src="https://github.com/user-attachments/assets/c51becf9-abed-4b97-aaf2-1f07c90fc645" />
+  <img width="1080" height="2424" alt="Screenshot_1780422179" src="https://github.com/user-attachments/assets/c4712b00-de82-4ce9-b97d-65e54f1f4f4d" />
+  <img width="1080" height="2424" alt="Screenshot_1780422183" src="https://github.com/user-attachments/assets/cf643f6a-3285-43e2-8fa6-da6e8cffaa50" />
+
+
+
+
+
+
 
 
 
