@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
-      themeMode: ThemeMode.dark, // Dark por defecto (estética videojuego)
+      themeMode: ThemeMode.dark,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -91,7 +91,6 @@ class MyApp extends StatelessWidget {
         actionsIconTheme: const IconThemeData(color: cyan),
       ),
       cardTheme: CardThemeData(
-        // ✨ Corregido de CardTheme a CardThemeData
         color: navyCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -173,7 +172,6 @@ class MyApp extends StatelessWidget {
         thickness: 1,
       ),
       dialogTheme: DialogThemeData(
-        // ✨ Corregido de DialogTheme a DialogThemeData
         backgroundColor: navyCard,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
@@ -222,7 +220,6 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildLightTheme() {
-    // Light theme — hereda del dark por diseño
     return _buildDarkTheme();
   }
 }

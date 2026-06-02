@@ -223,15 +223,14 @@ class _SecondScreenState extends State<SecondScreen> {
             ElevatedButton(
               child: const Text('GUARDAR'),
               onPressed: () async {
-                // 🛠️ Convertimos los textos de los controladores a números válidos
                 double? parsedLat = double.tryParse(latC.text);
                 double? parsedLon = double.tryParse(lonC.text);
 
                 if (parsedLat != null && parsedLon != null) {
                   await DatabaseHelper.instance.updateCoordinate(
                     ts,
-                    parsedLat, // Ahora pasamos el double corregido
-                    parsedLon, // Ahora pasamos el double corregido
+                    parsedLat,
+                    parsedLon,
                     selType,
                     isOp ? 1 : 0,
                   );
@@ -239,7 +238,6 @@ class _SecondScreenState extends State<SecondScreen> {
                   Navigator.of(ctx).pop();
                   _loadDbCoordinatesAndUpdate();
                 } else {
-                  // Opcional: Mostrar un aviso si el usuario mete letras en vez de números
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(

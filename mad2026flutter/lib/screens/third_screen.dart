@@ -94,7 +94,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
             children: [
               const SizedBox(height: 16),
 
-              // Header visual
               Center(
                 child: Container(
                   width: 100,
@@ -136,7 +135,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Botón GPS + API
               _AlertButton(
                 icon: _isLoadingWeather
                     ? SizedBox(
@@ -156,7 +154,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Botón protocolo
               _AlertButton(
                 icon: const Icon(Icons.health_and_safety_rounded),
                 label: 'PROTOCOLO: GOLPE DE CALOR',
@@ -196,7 +193,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
 
               const SizedBox(height: 32),
 
-              // Info card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(

@@ -34,7 +34,6 @@ class DatabaseHelper {
     );
   }
 
-  // INSERTAR
   Future<void> insertCoordinate(
     Position position, {
     String type = 'water',
@@ -66,13 +65,11 @@ class DatabaseHelper {
     });
   }
 
-  // LEER
   Future<List<Map<String, dynamic>>> getCoordinates() async {
     final db = await database;
     return await db.query('coordinates');
   }
 
-  // BORRAR
   Future<void> deleteCoordinate(String timestamp) async {
     final db = await database;
     await db.delete(
@@ -82,8 +79,6 @@ class DatabaseHelper {
     );
   }
 
-  // ACTUALIZAR
-  // ACTUALIZAR (Añadimos el tipo y el estado operativo)
   Future<void> updateCoordinate(
     String timestamp,
     double newLat,
@@ -95,8 +90,8 @@ class DatabaseHelper {
     await db.update(
       'coordinates',
       {
-        'latitude': newLat, //  Correct data type (double)
-        'longitude': newLong, //  Correct data type (double)
+        'latitude': newLat,
+        'longitude': newLong,
         'type': newType,
         'is_operational': isOperational,
       },
