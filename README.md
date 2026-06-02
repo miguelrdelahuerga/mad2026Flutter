@@ -1,4 +1,4 @@
-## Proyecto Base MAD 2026 - Flutter
+## OASIS Tracker - Flutter
 
 ## Workspace
 
