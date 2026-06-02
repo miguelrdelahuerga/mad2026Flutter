@@ -17,14 +17,16 @@ class DatabaseHelper {
   initDB() async {
     final path = await getDatabasesPath();
     return await openDatabase(
-      join(path, 'coordinate_database.db'),
+      join(path, 'oasis_v3.db'),
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE coordinates(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             latitude REAL,
-            longitude REAL
+            longitude REAL,
+            type TEXT,
+            is_operational INTEGER
           )
         ''');
       },
@@ -33,12 +35,34 @@ class DatabaseHelper {
   }
 
   // INSERTAR
-  Future<void> insertCoordinate(Position position) async {
+  Future<void> insertCoordinate(
+    Position position, {
+    String type = 'water',
+    int isOperational = 1,
+  }) async {
     final db = await database;
     await db.insert('coordinates', {
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
       'latitude': position.latitude,
-      'longitude': position.longitude
+      'longitude': position.longitude,
+      'type': type,
+      'is_operational': isOperational,
+    });
+  }
+
+  Future<void> insertManualCoordinate(
+    double lat,
+    double lon, {
+    String type = 'water',
+    int isOperational = 1,
+  }) async {
+    final db = await database;
+    await db.insert('coordinates', {
+      'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+      'latitude': lat,
+      'longitude': lon,
+      'type': type,
+      'is_operational': isOperational,
     });
   }
 
@@ -51,15 +75,31 @@ class DatabaseHelper {
   // BORRAR
   Future<void> deleteCoordinate(String timestamp) async {
     final db = await database;
-    await db.delete('coordinates', where: 'timestamp = ?', whereArgs: [timestamp]);
+    await db.delete(
+      'coordinates',
+      where: 'timestamp = ?',
+      whereArgs: [timestamp],
+    );
   }
 
   // ACTUALIZAR
-  Future<void> updateCoordinate(String timestamp, String newLat, String newLong) async {
+  // ACTUALIZAR (Añadimos el tipo y el estado operativo)
+  Future<void> updateCoordinate(
+    String timestamp,
+    double newLat,
+    double newLong,
+    String newType,
+    int isOperational,
+  ) async {
     final db = await database;
     await db.update(
       'coordinates',
-      {'latitude': newLat, 'longitude': newLong},
+      {
+        'latitude': newLat, //  Correct data type (double)
+        'longitude': newLong, //  Correct data type (double)
+        'type': newType,
+        'is_operational': isOperational,
+      },
       where: 'timestamp = ?',
       whereArgs: [timestamp],
     );
