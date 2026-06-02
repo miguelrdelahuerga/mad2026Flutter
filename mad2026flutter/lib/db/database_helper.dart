@@ -35,26 +35,37 @@ class DatabaseHelper {
   }
 
   // INSERTAR
-  Future<void> insertCoordinate(Position position, {String type = 'water', int isOperational = 1}) async {
+  Future<void> insertCoordinate(
+    Position position, {
+    String type = 'water',
+    int isOperational = 1,
+  }) async {
     final db = await database;
     await db.insert('coordinates', {
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
       'latitude': position.latitude,
       'longitude': position.longitude,
       'type': type,
-      'is_operational': isOperational
+      'is_operational': isOperational,
     });
   }
-  Future<void> insertManualCoordinate(double lat, double lon, {String type = 'water', int isOperational = 1}) async {
+
+  Future<void> insertManualCoordinate(
+    double lat,
+    double lon, {
+    String type = 'water',
+    int isOperational = 1,
+  }) async {
     final db = await database;
     await db.insert('coordinates', {
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
       'latitude': lat,
       'longitude': lon,
       'type': type,
-      'is_operational': isOperational
+      'is_operational': isOperational,
     });
   }
+
   // LEER
   Future<List<Map<String, dynamic>>> getCoordinates() async {
     final db = await database;
@@ -64,20 +75,30 @@ class DatabaseHelper {
   // BORRAR
   Future<void> deleteCoordinate(String timestamp) async {
     final db = await database;
-    await db.delete('coordinates', where: 'timestamp = ?', whereArgs: [timestamp]);
+    await db.delete(
+      'coordinates',
+      where: 'timestamp = ?',
+      whereArgs: [timestamp],
+    );
   }
 
   // ACTUALIZAR
   // ACTUALIZAR (Añadimos el tipo y el estado operativo)
-  Future<void> updateCoordinate(String timestamp, String newLat, String newLong, String newType, int isOperational) async {
+  Future<void> updateCoordinate(
+    String timestamp,
+    double newLat,
+    double newLong,
+    String newType,
+    int isOperational,
+  ) async {
     final db = await database;
     await db.update(
       'coordinates',
       {
-        'latitude': newLat,
-        'longitude': newLong,
+        'latitude': newLat, //  Correct data type (double)
+        'longitude': newLong, //  Correct data type (double)
         'type': newType,
-        'is_operational': isOperational
+        'is_operational': isOperational,
       },
       where: 'timestamp = ?',
       whereArgs: [timestamp],
